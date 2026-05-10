@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nvision.holiday</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/harryfushen/.nvm/versions/node/v24.15.0/bin/pm2</string>
+        <string>resurrect</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>WorkingDirectory</key>
+    <string>/Users/harryfushen/personal/AI/CC/holiday-system</string>
+    <key>StandardOutPath</key>
+    <string>/Users/harryfushen/personal/AI/CC/holiday-system/logs/launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/harryfushen/personal/AI/CC/holiday-system/logs/launchd.err</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/harryfushen/.nvm/versions/node/v24.15.0/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>
