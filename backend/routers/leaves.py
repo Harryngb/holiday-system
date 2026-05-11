@@ -6,6 +6,7 @@ from database import get_db
 from models import User, LeaveRequest, Notification
 from schemas import LeaveRequestCreate, LeaveRequestResponse
 from auth import get_current_user
+from utils.email import send_leave_notification
 
 router = APIRouter(prefix="/api/leaves", tags=["假期申请"])
 
@@ -155,18 +156,17 @@ def create_leave(
     db.commit()
     db.refresh(leave_req)
 
-    # 通知管理员和主管（排除自己）
+    # 通知管理员和主管（排除自己）- 站内信 + 邮件
     admins = db.query(User).filter(
         User.user_type.in_(["admin", "supervisor"]),
         User.id != user.id,
     ).all()
+    leave_label = req.leave_type if req.request_type == "leave" else "加班"
+    detail = f"{user.name} 提交了{leave_label}申请（{req.start_date} ~ {req.end_date or req.start_date}，共{req.quantity}{req.unit}）"
     for a in admins:
-        leave_label = req.leave_type if req.request_type == "leave" else "加班"
-        create_notification(
-            db, a.id,
-            "新的假期申请",
-            f"{user.name} 提交了{leave_label}申请，等待审批",
-        )
+        create_notification(db, a.id, "新的假期申请", detail)
+        if a.email:
+            send_leave_notification(a.email, user.name, leave_label, "pending")
     db.commit()
 
     lr = db.query(LeaveRequest).options(

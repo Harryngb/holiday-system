@@ -9,6 +9,7 @@ from database import engine, Base, SessionLocal, DATABASE_URL as DB_URL
 from config import DATABASE_URL as RAW_DB_URL
 from models import User
 from auth import hash_password
+from scheduler import start_scheduler
 
 app = FastAPI(title="nVision Global 假期管理系统", version="1.0.0")
 
@@ -139,6 +140,12 @@ def startup():
             db.close()
     except Exception as e:
         print(f"创建管理员失败: {e}")
+
+    # 启动定时任务
+    try:
+        start_scheduler()
+    except Exception as e:
+        print(f"启动定时任务失败: {e}")
 
 
 if __name__ == "__main__":

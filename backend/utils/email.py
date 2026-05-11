@@ -1,7 +1,8 @@
 import smtplib
+from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, EMAIL_ENABLED
+from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, EMAIL_ENABLED, BASE_URL
 
 
 def send_email(to: str, subject: str, body: str):
@@ -45,16 +46,31 @@ def send_email(to: str, subject: str, body: str):
         print(f"发送邮件失败: {e}")
 
 
-def send_leave_notification(to: str, applicant_name: str, leave_type: str, status: str):
+def send_leave_notification(to: str, applicant_name: str, leave_type: str, status: str, detail: str = ""):
+    today = datetime.now().strftime("%Y-%m-%d")
     if status == "pending":
-        subject = f"新的假期申请 - {applicant_name}"
-        body = f"<p>员工 <b>{applicant_name}</b> 提交了新的{leave_type}申请，请审批。</p>"
+        subject = f"[nVision] {today} 新的{leave_type}申请 - {applicant_name}"
+        body = f"""
+        <p>员工 <b>{applicant_name}</b> 提交了新的{leave_type}申请。</p>
+        <p style="color:#666;">{detail}</p>
+        <p style="margin-top:20px;">
+            <a href="{BASE_URL}" style="display:inline-block;background:#1a3c6e;color:white;padding:10px 24px;text-decoration:none;border-radius:4px;">前往审批</a>
+        </p>
+        """
     elif status == "approved":
-        subject = f"申请已通过 - {applicant_name}"
-        body = f"<p>您的{leave_type}申请已通过审批。</p>"
+        subject = f"[nVision] {today} {leave_type}申请已通过 - {applicant_name}"
+        body = f"""
+        <p>您好 <b>{applicant_name}</b>，</p>
+        <p>您的{leave_type}申请已通过审批。</p>
+        <p style="color:#666;">{detail}</p>
+        """
     elif status == "rejected":
-        subject = f"申请已拒绝 - {applicant_name}"
-        body = f"<p>您的{leave_type}申请已被拒绝。</p>"
+        subject = f"[nVision] {today} {leave_type}申请已被拒绝 - {applicant_name}"
+        body = f"""
+        <p>您好 <b>{applicant_name}</b>，</p>
+        <p>您的{leave_type}申请已被拒绝。</p>
+        <p style="color:#666;">{detail}</p>
+        """
     else:
         return
 

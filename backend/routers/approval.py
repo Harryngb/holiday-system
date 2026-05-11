@@ -5,6 +5,7 @@ from database import get_db
 from models import User, LeaveRequest, Notification
 from schemas import ApproveRequest, RejectRequest, LeaveRequestResponse
 from auth import get_current_user
+from utils.email import send_leave_notification
 
 router = APIRouter(prefix="/api/leaves", tags=["审批"])
 
@@ -186,6 +187,8 @@ def batch_approve(
         if warning:
             notification_text += f"\n{warning}"
         create_notification(db, lr.user_id, "申请已通过（批量审批）", notification_text)
+        if lr.user.email:
+            send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved")
 
         if warning:
             warnings.append({"leave_id": lr.id, "user_name": lr.user.name if lr.user else "", "warning": warning})
@@ -264,6 +267,8 @@ def approve_leave(
         notification_text += f"\n{warning}"
 
     create_notification(db, lr.user_id, f"申请已通过{deduction_note}", notification_text)
+    if lr.user.email:
+        send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved")
 
     db.commit()
     db.refresh(lr)
@@ -309,12 +314,15 @@ def reject_leave(
     lr.approver_id = approver.id
     lr.approval_comment = req.comment or ""
 
+    leave_label = "加班" if lr.request_type == "overtime" else (lr.leave_type or "休假")
     create_notification(
         db, lr.user_id,
         "申请已拒绝",
-        f"您的{'加班' if lr.request_type == 'overtime' else lr.leave_type or '休假'}申请已由 {approver.name} 拒绝"
+        f"您的{leave_label}申请已由 {approver.name} 拒绝"
         + (f"。原因: {req.comment}" if req.comment else ""),
     )
+    if lr.user.email:
+        send_leave_notification(lr.user.email, lr.user.name, leave_label, "rejected")
 
     db.commit()
     db.refresh(lr)
