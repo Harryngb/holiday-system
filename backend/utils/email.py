@@ -1,4 +1,5 @@
 import smtplib
+import threading
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -37,13 +38,16 @@ def send_email(to: str, subject: str, body: str):
 
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    try:
-        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-    except Exception as e:
-        print(f"发送邮件失败: {e}")
+    def _send():
+        try:
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10)
+            server.login(SMTP_USER, SMTP_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+        except Exception as e:
+            print(f"发送邮件失败: {e}")
+
+    threading.Thread(target=_send, daemon=True).start()
 
 
 def send_leave_notification(to: str, applicant_name: str, leave_type: str, status: str, detail: str = ""):
