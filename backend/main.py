@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy import inspect, text
-from database import engine, Base, SessionLocal
+from database import engine, Base, SessionLocal, DATABASE_URL
 from models import User
 from auth import hash_password
 
@@ -35,6 +35,18 @@ app.include_router(notifications.router)
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+
+@app.get("/debug/db")
+async def debug_db():
+    url = DATABASE_URL
+    masked = url
+    if "@" in url:
+        parts = url.split("@")
+        creds = parts[0].split(":")
+        if len(creds) == 2:
+            masked = f"{creds[0]}:***@{parts[1]}"
+    return {"database_url": masked, "using_sqlite": url.startswith("sqlite")}
 
 
 # 生产模式：如果存在 static 目录则提供前端静态文件
