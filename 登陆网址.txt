@@ -1,0 +1,5 @@
+最终版本：
+  - 前端: https://applyleave.pages.dev
+  - 后端: https://applyleave.up.railway.app
+  - 数据库: Supabase PostgreSQL
+  - 登录: jhong / 123456

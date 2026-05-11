@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy import inspect, text
-from database import engine, Base, SessionLocal, DATABASE_URL
+from database import engine, Base, SessionLocal, DATABASE_URL as DB_URL
+from config import DATABASE_URL as RAW_DB_URL
 from models import User
 from auth import hash_password
 
@@ -39,14 +40,19 @@ async def health_check():
 
 @app.get("/debug/db")
 async def debug_db():
-    url = DATABASE_URL
-    masked = url
-    if "@" in url:
+    raw = RAW_DB_URL
+    corrected = DB_URL
+    def mask(url):
+        if "@" not in url:
+            return url
         parts = url.split("@")
         creds = parts[0].split(":")
-        if len(creds) == 2:
-            masked = f"{creds[0]}:***@{parts[1]}"
-    return {"database_url": masked, "using_sqlite": url.startswith("sqlite")}
+        return f"{creds[0]}:***@{parts[1]}"
+    return {
+        "raw_url": mask(raw),
+        "corrected_url": mask(corrected) if corrected != raw else None,
+        "using_sqlite": raw.startswith("sqlite"),
+    }
 
 
 # 生产模式：如果存在 static 目录则提供前端静态文件
@@ -90,42 +96,49 @@ def run_migrations():
 
 @app.on_event("startup")
 def startup():
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"数据库连接失败: {e}")
+        return  # 数据库不可用时不阻塞启动
     try:
         run_migrations()
     except Exception:
         pass  # 生产环境可能不支持动态加列，忽略
 
     # 创建默认管理员
-    db = SessionLocal()
     try:
-        existing = db.query(User).filter(User.username == "jhong").first()
-        if not existing:
-            admin = User(
-                employee_id="ADMIN001",
-                name="Admin",
-                username="jhong",
-                password=hash_password("123456"),
-                email="admin@nvisionglobal.com",
-                user_type="admin",
-                last_year="2025",
-                current_year="2026",
-                last_year_days=0,
-                current_year_days=0,
-                total_leave_days=0,
-                used_leave_days=0,
-                remaining_days=0,
-                last_year_hours=0,
-                current_year_hours=0,
-                total_leave_hours=0,
-                used_leave_hours=0,
-                remaining_hours=0,
-            )
-            db.add(admin)
-            db.commit()
-            print("默认管理员已创建: jhong / 123456")
-    finally:
-        db.close()
+        db = SessionLocal()
+        try:
+            existing = db.query(User).filter(User.username == "jhong").first()
+            if not existing:
+                admin = User(
+                    employee_id="ADMIN001",
+                    name="Admin",
+                    username="jhong",
+                    password=hash_password("123456"),
+                    email="admin@nvisionglobal.com",
+                    user_type="admin",
+                    last_year="2025",
+                    current_year="2026",
+                    last_year_days=0,
+                    current_year_days=0,
+                    total_leave_days=0,
+                    used_leave_days=0,
+                    remaining_days=0,
+                    last_year_hours=0,
+                    current_year_hours=0,
+                    total_leave_hours=0,
+                    used_leave_hours=0,
+                    remaining_hours=0,
+                )
+                db.add(admin)
+                db.commit()
+                print("默认管理员已创建: jhong / 123456")
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"创建管理员失败: {e}")
 
 
 if __name__ == "__main__":
