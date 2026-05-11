@@ -31,6 +31,12 @@ app.include_router(clearance.router)
 app.include_router(reports.router)
 app.include_router(notifications.router)
 
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
 # 生产模式：如果存在 static 目录则提供前端静态文件
 _static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.isdir(_static_dir):
@@ -38,8 +44,18 @@ if os.path.isdir(_static_dir):
     if os.path.isdir(_assets_dir):
         app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
 
+    _root_files = {}
+    for _f in os.listdir(_static_dir):
+        _fp = os.path.join(_static_dir, _f)
+        if os.path.isfile(_fp) and _f != "index.html":
+            _root_files[_f] = _fp
+
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
+        # 先找根目录静态文件 (logo, favicon etc.)
+        if full_path in _root_files:
+            return FileResponse(_root_files[full_path])
+        # SPA 路由回退到 index.html
         _index = os.path.join(_static_dir, "index.html")
         if os.path.isfile(_index):
             return FileResponse(_index)
@@ -101,4 +117,5 @@ def startup():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
