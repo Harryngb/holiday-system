@@ -10,7 +10,7 @@ from models import User, LeaveRequest
 from auth import get_current_user
 from utils.excel import generate_report
 from utils.email import send_email
-from config import EMAIL_ENABLED, SMTP_SERVER, SMTP_USER, SMTP_FROM
+from config import EMAIL_ENABLED, SMTP_SERVER, SMTP_USER, SMTP_FROM, RESEND_API_KEY
 from scheduler import send_daily_report
 
 router = APIRouter(prefix="/api/reports", tags=["报表"])
@@ -109,12 +109,13 @@ def email_status(user: User = Depends(get_current_user)):
 
     return {
         "EMAIL_ENABLED": EMAIL_ENABLED,
+        "RESEND_API_KEY": "已设置" if RESEND_API_KEY else "未设置",
         "SMTP_SERVER": SMTP_SERVER or "未设置",
         "SMTP_USER": SMTP_USER or "未设置",
         "SMTP_FROM": SMTP_FROM or "未设置",
         "admins": admin_msg,
         "users_with_email": f"{users_with_email} / {all_users} 个用户有邮箱",
-        "note": "EMAIL_ENABLED 为 false 时所有邮件都不会发送",
+        "note": "优先使用 Resend，其次 SendGrid，最后 SMTP（需要 Railway Pro）",
     }
 
 
