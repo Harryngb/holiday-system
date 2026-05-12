@@ -3,3 +3,8 @@
   - 后端: https://applyleave.up.railway.app
   - 数据库: Supabase PostgreSQL
   - 登录: jhong / 123456
+
+
+  - 前端: applyleave.pages.dev → Cloudflare Pages
+  - 后端: applyleave.up.railway.app → Railway + Supabase PostgreSQL
+  - 数据库: Supabase pehfxaruegiwcspjmklx (Japan region pooler)

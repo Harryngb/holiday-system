@@ -1,9 +1,6 @@
-import io
-import smtplib
-from email import encoders
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import base64
+import json
+import urllib.request
 from datetime import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -12,11 +9,12 @@ from sqlalchemy.orm import sessionmaker
 
 from config import (
     DEFAULT_ADMIN_EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER,
-    SMTP_PASSWORD, SMTP_FROM, EMAIL_ENABLED,
+    SMTP_PASSWORD, SMTP_FROM, SENDGRID_API_KEY, EMAIL_ENABLED,
 )
 from database import DATABASE_URL, connect_args
 from models import User, LeaveRequest
 from utils.excel import generate_report
+from utils.email import _html_wrapper
 
 scheduler = BackgroundScheduler()
 
@@ -25,7 +23,7 @@ def send_daily_report():
     """生成并发送每日假期报表给管理员"""
     if not EMAIL_ENABLED:
         return
-    if not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
+    if not SENDGRID_API_KEY and not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
         return
 
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
@@ -63,51 +61,75 @@ def send_daily_report():
         {stats}
         <p style="color:#999;font-size:12px;">报表文件已附在邮件中。</p>
         """
+        full_html = _html_wrapper(body_html)
 
-        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=15)
-        server.login(SMTP_USER, SMTP_PASSWORD)
-        try:
-            for addr in admin_emails:
-                msg = MIMEMultipart("mixed")
-                msg["From"] = SMTP_FROM
-                msg["To"] = addr
-                msg["Subject"] = f"[nVision] 假期日报 {today}"
-
-                html_part = MIMEText(
-                    f"""<html><body style="font-family:'Microsoft YaHei',Arial,sans-serif;padding:20px;color:#333;">
-                    <div style="max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-                        <div style="background-color:#1a3c6e;padding:15px;text-align:center;">
-                            <h2 style="color:white;margin:0;">nVision Global</h2>
-                            <p style="color:#ccc;margin:5px 0 0;">假期日报 {today}</p>
-                        </div>
-                        <div style="padding:20px;">{body_html}</div>
-                        <div style="background-color:#f5f5f5;padding:10px;text-align:center;font-size:12px;color:#999;">
-                            <p>nVision Global 假期管理系统 · 自动发送</p>
-                        </div>
-                    </div></body></html>""",
-                    "html", "utf-8",
-                )
-                msg.attach(html_part)
-
-                xlsx_part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                xlsx_part.set_payload(xlsx_data)
-                encoders.encode_base64(xlsx_part)
-                xlsx_part.add_header(
-                    "Content-Disposition",
-                    "attachment",
-                    filename=f"nVision_Daily_Report_{today}.xlsx",
-                )
-                msg.attach(xlsx_part)
-
-                server.send_message(msg)
-        finally:
-            server.quit()
+        if SENDGRID_API_KEY:
+            _send_report_via_sendgrid(admin_emails, today, full_html, xlsx_data)
+        else:
+            _send_report_via_smtp(admin_emails, today, full_html, xlsx_data)
 
         print(f"[日报] {today} 报表已发送给 {len(admin_emails)} 个管理员")
     except Exception as e:
         print(f"[日报] 发送失败: {e}")
     finally:
         db.close()
+
+
+def _send_report_via_sendgrid(admin_emails, today, html, xlsx_data):
+    encoded = base64.b64encode(xlsx_data).decode("utf-8")
+    for addr in admin_emails:
+        payload = json.dumps({
+            "personalizations": [{"to": [{"email": addr}]}],
+            "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "nVision Global"},
+            "subject": f"[nVision] 假期日报 {today}",
+            "content": [{"type": "text/html", "value": html}],
+            "attachments": [{
+                "content": encoded,
+                "filename": f"nVision_Daily_Report_{today}.xlsx",
+                "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            }],
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.sendgrid.com/v3/mail/send",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {SENDGRID_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=30)
+
+
+def _send_report_via_smtp(admin_emails, today, html, xlsx_data):
+    import smtplib
+    from email import encoders
+    from email.mime.base import MIMEBase
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=15)
+    server.login(SMTP_USER, SMTP_PASSWORD)
+    try:
+        for addr in admin_emails:
+            msg = MIMEMultipart("mixed")
+            msg["From"] = SMTP_FROM
+            msg["To"] = addr
+            msg["Subject"] = f"[nVision] 假期日报 {today}"
+            msg.attach(MIMEText(html, "html", "utf-8"))
+
+            xlsx_part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            xlsx_part.set_payload(xlsx_data)
+            encoders.encode_base64(xlsx_part)
+            xlsx_part.add_header(
+                "Content-Disposition", "attachment",
+                filename=f"nVision_Daily_Report_{today}.xlsx",
+            )
+            msg.attach(xlsx_part)
+            server.send_message(msg)
+    finally:
+        server.quit()
 
 
 def _build_summary(leave_requests):

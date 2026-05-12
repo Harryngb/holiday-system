@@ -1,24 +1,72 @@
+import json
 import smtplib
 import threading
+import urllib.request
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, EMAIL_ENABLED, BASE_URL
+from config import (
+    SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM,
+    SENDGRID_API_KEY, EMAIL_ENABLED, BASE_URL,
+)
 
 
 def send_email(to: str, subject: str, body: str):
     if not EMAIL_ENABLED:
+        print("[邮件] 跳过：EMAIL_ENABLED 为 false")
         return
 
-    if not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
-        return
+    def _send():
+        try:
+            if SENDGRID_API_KEY:
+                _send_via_sendgrid(to, subject, body)
+            elif all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
+                _send_via_smtp(to, subject, body)
+            else:
+                print("[邮件] 跳过：未配置 SENDGRID_API_KEY 和 SMTP")
+        except Exception as e:
+            print(f"[邮件] 发送失败: {e}")
 
+    threading.Thread(target=_send, daemon=True).start()
+
+
+def _send_via_smtp(to: str, subject: str, body: str):
     msg = MIMEMultipart("alternative")
     msg["From"] = SMTP_FROM
     msg["To"] = to
     msg["Subject"] = subject
+    msg.attach(MIMEText(_html_wrapper(body), "html", "utf-8"))
 
-    html_body = f"""
+    server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10)
+    server.login(SMTP_USER, SMTP_PASSWORD)
+    server.send_message(msg)
+    server.quit()
+    print(f"[邮件] SMTP 发送成功 -> {to}")
+
+
+def _send_via_sendgrid(to: str, subject: str, body: str):
+    payload = json.dumps({
+        "personalizations": [{"to": [{"email": to}]}],
+        "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "nVision Global"},
+        "subject": subject,
+        "content": [{"type": "text/html", "value": _html_wrapper(body)}],
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15)
+    print(f"[邮件] SendGrid 发送成功 -> {to}")
+
+
+def _html_wrapper(body: str) -> str:
+    return f"""
     <html>
     <body style="font-family: 'Microsoft YaHei', Arial, sans-serif; padding: 20px; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -35,26 +83,6 @@ def send_email(to: str, subject: str, body: str):
     </body>
     </html>
     """
-
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-    def _send():
-        try:
-            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=10)
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
-            server.quit()
-            print(f"[邮件] 发送成功 -> {to}")
-        except smtplib.SMTPAuthenticationError:
-            print(f"[邮件] 认证失败: SMTP_USER={SMTP_USER}, 请检查密码/App Password")
-        except smtplib.SMTPRecipientsRefused:
-            print(f"[邮件] 收件人被拒: {to}")
-        except smtplib.SMTPServerDisconnected:
-            print(f"[邮件] 服务器断开连接: {SMTP_SERVER}")
-        except Exception as e:
-            print(f"[邮件] 发送失败: {e}")
-
-    threading.Thread(target=_send, daemon=True).start()
 
 
 def send_leave_notification(to: str, applicant_name: str, leave_type: str, status: str, detail: str = ""):

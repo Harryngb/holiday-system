@@ -15,12 +15,15 @@ JWT_SECRET = os.getenv("JWT_SECRET", "nvision-global-holiday-secret-key-2026")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
-# SMTP (企业邮箱)
+# SMTP (企业邮箱，Railway免费计划不支持SMTP端口)
 SMTP_SERVER = os.getenv("SMTP_SERVER", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SMTP_FROM = os.getenv("SMTP_FROM", "")
+
+# SendGrid HTTP API (推荐，Railway免费计划可用)
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 
 # 是否启用邮件通知
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "false").lower() == "true"
