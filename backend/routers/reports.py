@@ -58,8 +58,8 @@ def export_report(db: Session = Depends(get_db), user: User = Depends(get_curren
 
     buffer = generate_report(users, leave_requests, current_year)
 
-    filename = f"nVision_Global_Ningbo_{current_year}_假期报表_{today}.xlsx"
-    ascii_name = f"nVision_Global_Ningbo_{current_year}_Report.xlsx"
+    filename = f"Fugistics_Hub_Ningbo_{current_year}_假期报表_{today}.xlsx"
+    ascii_name = f"Fugistics_Hub_Ningbo_{current_year}_Report.xlsx"
 
     return StreamingResponse(
         buffer,
@@ -177,7 +177,7 @@ def test_email(user: User = Depends(get_current_user)):
         raise HTTPException(status_code=400, detail="当前管理员没有设置邮箱")
     send_email(
         to=user.email,
-        subject="[nVision] 邮件配置测试",
+        subject="[Fugistics Hub] 邮件配置测试",
         body="<p>这是一封测试邮件，您的邮件配置正常工作。</p>",
     )
     return {"message": f"测试邮件已发送至 {user.email}"}

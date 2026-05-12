@@ -7,7 +7,7 @@ FRONTEND_DIR="$PROJECT_DIR/frontend"
 LOGS_DIR="$PROJECT_DIR/logs"
 
 echo "============================================"
-echo "  nVision Global 假期管理系统 - 生产部署"
+echo "  Fugistics Hub 假期管理系统 - 生产部署"
 echo "============================================"
 
 # 创建日志目录

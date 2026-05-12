@@ -25,7 +25,7 @@ const Reports: React.FC = () => {
       .then((blob) => {
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `nVision_Global_Ningbo_${currentYear}_假期报表_${today}.xlsx`;
+        link.download = `Fugistics_Hub_Ningbo_${currentYear}_假期报表_${today}.xlsx`;
         link.click();
         URL.revokeObjectURL(link.href);
         message.success('报表下载成功');
@@ -43,7 +43,7 @@ const Reports: React.FC = () => {
 
       <Card>
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <Title level={3}>nVision Global Ningbo {currentYear}年度假期报表</Title>
+          <Title level={3}>Fugistics Hub Ningbo {currentYear}年度假期报表</Title>
           <Paragraph type="secondary">
             {user.user_type === 'employee'
               ? '导出您个人的假期数据'

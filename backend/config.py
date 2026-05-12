@@ -32,7 +32,7 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 
 # 公司名称（用于邮件、报表等）
-COMPANY_NAME = os.getenv("COMPANY_NAME", "nVision Global")
+COMPANY_NAME = os.getenv("COMPANY_NAME", "Fugistics Hub")
 # Logo URL（用于邮件模板，留空则显示文字标题）
 LOGO_URL = os.getenv("LOGO_URL", "")
 

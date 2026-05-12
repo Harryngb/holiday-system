@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# nVision Global 假期管理系统 - 一键公司改名
+# 假期管理系统 - 一键公司改名
 # ============================================
 # 用法:
 #   ./rename.sh "新公司名"
@@ -18,7 +18,7 @@ if [ $# -lt 1 ]; then
 fi
 
 NEW_NAME="$1"
-OLD_NAME="nVision Global"
+OLD_NAME="Fugistics Hub"
 
 echo "将公司名从 \"$OLD_NAME\" 改为 \"$NEW_NAME\"..."
 echo ""
@@ -55,7 +55,7 @@ done
 echo ""
 echo "🎉 完成！公司名已改为 \"$NEW_NAME\""
 echo ""
-echo "📌 更换 Logo：替换 frontend/public/nvision-logo.jpg 即可"
+echo "📌 更换 Logo：替换 frontend/public/fugistics-logo.svg 或前端用其他格式"
 echo "📌 邮箱 Logo：上传图片后，在 Railway 添加 LOGO_URL 环境变量"
 echo ""
 echo "▶ 部署："

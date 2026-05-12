@@ -58,7 +58,7 @@ def send_daily_report():
         stats = _build_summary(leave_requests)
         body_html = f"""
         <p>管理员您好，</p>
-        <p>以下是 nVision Global 假期系统每日自动报表。</p>
+        <p>以下是 Fugistics Hub 假期系统每日自动报表。</p>
         {stats}
         <p style="color:#999;font-size:12px;">报表文件已附在邮件中。</p>
         """
@@ -84,12 +84,12 @@ def _send_report_via_brevo(admin_emails, today, html, xlsx_data):
     encoded = base64.b64encode(xlsx_data).decode("utf-8")
     for addr in admin_emails:
         payload = json.dumps({
-            "sender": {"name": "nVision Global", "email": SMTP_FROM or "hashen@nvisionglobal.com"},
+            "sender": {"name": "Fugistics Hub", "email": SMTP_FROM or "hashen@nvisionglobal.com"},
             "to": [{"email": addr}],
-            "subject": f"[nVision] 假期日报 {today}",
+            "subject": f"[Fugistics Hub] 假期日报 {today}",
             "htmlContent": html,
             "attachment": [{
-                "name": f"nVision_Daily_Report_{today}.xlsx",
+                "name": f"Fugistics_Hub_Daily_Report_{today}.xlsx",
                 "content": encoded,
             }],
         }).encode("utf-8")
@@ -110,12 +110,12 @@ def _send_report_via_resend(admin_emails, today, html, xlsx_data):
     encoded = base64.b64encode(xlsx_data).decode("utf-8")
     for addr in admin_emails:
         payload = json.dumps({
-            "from": SMTP_FROM or "nVision Global <onboarding@resend.dev>",
+            "from": SMTP_FROM or "Fugistics Hub <onboarding@resend.dev>",
             "to": [addr],
-            "subject": f"[nVision] 假期日报 {today}",
+            "subject": f"[Fugistics Hub] 假期日报 {today}",
             "html": html,
             "attachments": [{
-                "filename": f"nVision_Daily_Report_{today}.xlsx",
+                "filename": f"Fugistics_Hub_Daily_Report_{today}.xlsx",
                 "content": encoded,
             }],
         }).encode("utf-8")
@@ -137,12 +137,12 @@ def _send_report_via_sendgrid(admin_emails, today, html, xlsx_data):
     for addr in admin_emails:
         payload = json.dumps({
             "personalizations": [{"to": [{"email": addr}]}],
-            "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "nVision Global"},
-            "subject": f"[nVision] 假期日报 {today}",
+            "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "Fugistics Hub"},
+            "subject": f"[Fugistics Hub] 假期日报 {today}",
             "content": [{"type": "text/html", "value": html}],
             "attachments": [{
                 "content": encoded,
-                "filename": f"nVision_Daily_Report_{today}.xlsx",
+                "filename": f"Fugistics_Hub_Daily_Report_{today}.xlsx",
                 "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             }],
         }).encode("utf-8")
@@ -173,7 +173,7 @@ def _send_report_via_smtp(admin_emails, today, html, xlsx_data):
             msg = MIMEMultipart("mixed")
             msg["From"] = SMTP_FROM
             msg["To"] = addr
-            msg["Subject"] = f"[nVision] 假期日报 {today}"
+            msg["Subject"] = f"[Fugistics Hub] 假期日报 {today}"
             msg.attach(MIMEText(html, "html", "utf-8"))
 
             xlsx_part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -181,7 +181,7 @@ def _send_report_via_smtp(admin_emails, today, html, xlsx_data):
             encoders.encode_base64(xlsx_part)
             xlsx_part.add_header(
                 "Content-Disposition", "attachment",
-                filename=f"nVision_Daily_Report_{today}.xlsx",
+                filename=f"Fugistics_Hub_Daily_Report_{today}.xlsx",
             )
             msg.attach(xlsx_part)
             server.send_message(msg)

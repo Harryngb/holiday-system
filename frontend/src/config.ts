@@ -1,6 +1,6 @@
 const siteConfig = {
-  companyName: "nVision Global",
-  logoPath: "/nvision-logo.jpg",
+  companyName: "Fugistics Hub",
+  logoPath: "/fugistics-logo.svg",
   currentYear: new Date().getFullYear().toString(),
 };
 

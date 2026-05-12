@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+  <!-- Icon: 简洁的抽象箭头/货运标记 -->
+  <g transform="translate(20, 10)">
+    <rect x="0" y="20" width="60" height="40" rx="4" fill="#1a3c6e"/>
+    <rect x="8" y="30" width="44" height="20" rx="2" fill="#ffffff" opacity="0.9"/>
+    <polygon points="18,50 30,35 42,50" fill="#1a3c6e"/>
+    <line x1="30" y1="35" x2="30" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="22" cy="62" r="4" fill="#1a3c6e"/>
+    <circle cx="38" cy="62" r="4" fill="#1a3c6e"/>
+  </g>
+
+  <!-- 文字: Fugistics -->
+  <text x="100" y="45" font-family="'Helvetica Neue', 'Segoe UI', Arial, sans-serif" font-size="30" font-weight="700" fill="#1a3c6e" letter-spacing="1">
+    Fugistics
+  </text>
+
+  <!-- 文字: Hub -->
+  <text x="100" y="75" font-family="'Helvetica Neue', 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="300" fill="#5a7a9e" letter-spacing="4">
+    HUB
+  </text>
+</svg>

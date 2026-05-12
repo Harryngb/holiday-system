@@ -37,7 +37,7 @@ def send_email(to: str, subject: str, body: str):
 
 def _send_via_resend(to: str, subject: str, body: str):
     payload = json.dumps({
-        "from": "nVision Global <onboarding@resend.dev>",
+        "from": "Fugistics Hub <onboarding@resend.dev>",
         "to": [to],
         "subject": subject,
         "html": _html_wrapper(body),
@@ -59,7 +59,7 @@ def _send_via_resend(to: str, subject: str, body: str):
 def _send_via_brevo(to: str, subject: str, body: str):
     sender_email = SMTP_FROM or "hashen@nvisionglobal.com"
     payload = json.dumps({
-        "sender": {"name": "nVision Global", "email": sender_email},
+        "sender": {"name": "Fugistics Hub", "email": sender_email},
         "to": [{"email": to}],
         "subject": subject,
         "htmlContent": _html_wrapper(body),
@@ -95,7 +95,7 @@ def _send_via_smtp(to: str, subject: str, body: str):
 def _send_via_sendgrid(to: str, subject: str, body: str):
     payload = json.dumps({
         "personalizations": [{"to": [{"email": to}]}],
-        "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "nVision Global"},
+        "from": {"email": SMTP_FROM or "noreply@nvisionglobal.com", "name": "Fugistics Hub"},
         "subject": subject,
         "content": [{"type": "text/html", "value": _html_wrapper(body)}],
     }).encode("utf-8")
@@ -142,7 +142,7 @@ def send_leave_notification(to: str, applicant_name: str, leave_type: str, statu
     )
 
     if status == "pending":
-        subject = f"[nVision] 新的{leave_type}申请 - {applicant_name} ({today})"
+        subject = f"[Fugistics Hub] 新的{leave_type}申请 - {applicant_name} ({today})"
         body = f"""
         <p>管理员您好，</p>
         <p>员工 <b>{applicant_name}</b> 提交了新的 <b>{leave_type}</b> 申请，请及时审批。</p>
@@ -152,7 +152,7 @@ def send_leave_notification(to: str, applicant_name: str, leave_type: str, statu
         </p>
         """
     elif status == "approved":
-        subject = f"[nVision] {leave_type}申请已通过 - {applicant_name} ({today})"
+        subject = f"[Fugistics Hub] {leave_type}申请已通过 - {applicant_name} ({today})"
         body = f"""
         <p>您好 <b>{applicant_name}</b>，</p>
         <p>您的 <b>{leave_type}</b> 申请已通过审批。</p>
@@ -160,7 +160,7 @@ def send_leave_notification(to: str, applicant_name: str, leave_type: str, statu
         <p style="color:#999;font-size:12px;">如有疑问请联系管理员。</p>
         """
     elif status == "rejected":
-        subject = f"[nVision] {leave_type}申请已被拒绝 - {applicant_name} ({today})"
+        subject = f"[Fugistics Hub] {leave_type}申请已被拒绝 - {applicant_name} ({today})"
         body = f"""
         <p>您好 <b>{applicant_name}</b>，</p>
         <p>您的 <b>{leave_type}</b> 申请已被拒绝。</p>

@@ -45,8 +45,8 @@ const Login: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img
-            src="/nvision-logo.jpg"
-            alt="nVision Global"
+            src="/fugistics-logo.svg"
+            alt="Fugistics Hub"
             style={{ height: 60, marginBottom: 16 }}
           />
           <Title level={4} style={{ margin: 0, color: '#1a3c6e', fontWeight: 500 }}>
@@ -92,7 +92,7 @@ const Login: React.FC = () => {
 
         <div style={{ textAlign: 'center' }}>
           <Text type="secondary" style={{ fontSize: 12 }}>
-            &copy; 2026 nVision Global Technology Solutions, Inc.
+            &copy; 2026 Fugistics Hub Technology Solutions, Inc.
           </Text>
         </div>
       </Card>

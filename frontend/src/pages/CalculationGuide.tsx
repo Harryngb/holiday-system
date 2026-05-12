@@ -196,7 +196,7 @@ const CalculationGuide: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Title level={5}><FileTextOutlined /> 八、报表说明</Title>
         <ul>
-          <li><Text strong>报表标题</Text>：nVision Global Ningbo {new Date().getFullYear()}年度假期汇总</li>
+          <li><Text strong>报表标题</Text>：Fugistics Hub Ningbo {new Date().getFullYear()}年度假期汇总</li>
           <li><Text strong>员工</Text>：只能导出自己的数据</li>
           <li><Text strong>主管/管理员</Text>：可导出全部员工数据</li>
           <li>报表包含两个工作表："假期汇总"（余额概览）和"假期明细"（每条申请记录）</li>

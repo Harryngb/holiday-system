@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# nVision Global 假期管理系统 - 启动脚本
+# Fugistics Hub 假期管理系统 - 启动脚本
 
 echo "============================================"
-echo "  nVision Global 假期管理系统"
+echo "  Fugistics Hub 假期管理系统"
 echo "  Ningbo Office Holiday Management System"
 echo "============================================"
 

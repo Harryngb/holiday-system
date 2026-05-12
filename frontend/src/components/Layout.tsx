@@ -121,12 +121,12 @@ const Layout: React.FC = () => {
         >
           {collapsed ? (
             <Text strong style={{ color: '#e8b830', fontSize: 14, whiteSpace: 'nowrap' }}>
-              nV
+              FH
             </Text>
           ) : (
             <img
-              src="/nvision-logo.jpg"
-              alt="nVision Global"
+              src="/fugistics-logo.svg"
+              alt="Fugistics Hub"
               style={{ height: 36, maxWidth: '100%' }}
             />
           )}
