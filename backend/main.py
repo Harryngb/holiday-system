@@ -11,7 +11,8 @@ from models import User
 from auth import hash_password
 from scheduler import start_scheduler
 
-app = FastAPI(title="nVision Global 假期管理系统", version="1.0.0")
+from config import COMPANY_NAME
+app = FastAPI(title=f"{COMPANY_NAME} 假期管理系统", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

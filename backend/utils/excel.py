@@ -5,6 +5,7 @@ from openpyxl.utils import get_column_letter
 from typing import List
 from datetime import datetime
 from models import User, LeaveRequest
+from config import COMPANY_NAME
 
 
 def generate_report(users: List[User], leave_requests: List[LeaveRequest], current_year: str) -> BytesIO:
@@ -15,7 +16,7 @@ def generate_report(users: List[User], leave_requests: List[LeaveRequest], curre
     ws = wb.active
     ws.title = "假期汇总"
 
-    title = f"nVision Global Ningbo {current_year}年度假期汇总（{today_str}）"
+    title = f"{COMPANY_NAME} Ningbo {current_year}年度假期汇总（{today_str}）"
     ws.merge_cells("A1:L1")
     title_cell = ws["A1"]
     title_cell.value = title
@@ -68,7 +69,7 @@ def generate_report(users: List[User], leave_requests: List[LeaveRequest], curre
     # ========== Sheet 2: 假期明细 ==========
     ws2 = wb.create_sheet("假期明细")
 
-    detail_title = f"nVision Global Ningbo {current_year}年度假期明细（{today_str}）"
+    detail_title = f"{COMPANY_NAME} Ningbo {current_year}年度假期明细（{today_str}）"
     ws2.merge_cells("A1:N1")
     dt_cell = ws2["A1"]
     dt_cell.value = detail_title

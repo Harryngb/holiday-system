@@ -31,6 +31,11 @@ RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
 # Brevo (Sendinblue) HTTP API (推荐，免费300封/天，Railway免费计划可用)
 BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 
+# 公司名称（用于邮件、报表等）
+COMPANY_NAME = os.getenv("COMPANY_NAME", "nVision Global")
+# Logo URL（用于邮件模板，留空则显示文字标题）
+LOGO_URL = os.getenv("LOGO_URL", "")
+
 # 是否启用邮件通知
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "false").lower() == "true"
 

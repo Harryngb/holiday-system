@@ -7,7 +7,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import (
     SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM,
-    SENDGRID_API_KEY, RESEND_API_KEY, BREVO_API_KEY, EMAIL_ENABLED, BASE_URL,
+    SENDGRID_API_KEY, RESEND_API_KEY, BREVO_API_KEY,
+    EMAIL_ENABLED, BASE_URL, COMPANY_NAME, LOGO_URL,
 )
 
 
@@ -113,18 +114,19 @@ def _send_via_sendgrid(to: str, subject: str, body: str):
 
 
 def _html_wrapper(body: str) -> str:
+    logo_html = f'<img src="{LOGO_URL}" alt="{COMPANY_NAME}" style="max-height:40px;">' if LOGO_URL else f'<h2 style="color:white;margin:0;font-size:20px;">{COMPANY_NAME}</h2>'
     return f"""
     <html>
     <body style="font-family: 'Microsoft YaHei', Arial, sans-serif; padding: 20px; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
             <div style="background-color: #1a3c6e; padding: 15px; text-align: center;">
-                <h2 style="color: white; margin: 0;">nVision Global</h2>
+                {logo_html}
             </div>
             <div style="padding: 20px;">
                 {body}
             </div>
             <div style="background-color: #f5f5f5; padding: 10px; text-align: center; font-size: 12px; color: #999;">
-                <p>nVision Global 假期管理系统 · 自动发送</p>
+                <p>{COMPANY_NAME} · 自动发送</p>
             </div>
         </div>
     </body>
