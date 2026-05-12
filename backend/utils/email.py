@@ -56,8 +56,9 @@ def _send_via_resend(to: str, subject: str, body: str):
 
 
 def _send_via_brevo(to: str, subject: str, body: str):
+    sender_email = SMTP_FROM or "hashen@nvisionglobal.com"
     payload = json.dumps({
-        "sender": {"name": "nVision Global", "email": "noreply@nvisionglobal.com"},
+        "sender": {"name": "nVision Global", "email": sender_email},
         "to": [{"email": to}],
         "subject": subject,
         "htmlContent": _html_wrapper(body),
@@ -72,8 +73,8 @@ def _send_via_brevo(to: str, subject: str, body: str):
         },
         method="POST",
     )
-    urllib.request.urlopen(req, timeout=15)
-    print(f"[邮件] Brevo 发送成功 -> {to}")
+    resp = urllib.request.urlopen(req, timeout=15)
+    print(f"[邮件] Brevo 发送成功 -> {to} 响应: {resp.read().decode('utf-8')}")
 
 
 def _send_via_smtp(to: str, subject: str, body: str):

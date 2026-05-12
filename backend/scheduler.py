@@ -84,7 +84,7 @@ def _send_report_via_brevo(admin_emails, today, html, xlsx_data):
     encoded = base64.b64encode(xlsx_data).decode("utf-8")
     for addr in admin_emails:
         payload = json.dumps({
-            "sender": {"name": "nVision Global", "email": "noreply@nvisionglobal.com"},
+            "sender": {"name": "nVision Global", "email": SMTP_FROM or "hashen@nvisionglobal.com"},
             "to": [{"email": addr}],
             "subject": f"[nVision] 假期日报 {today}",
             "htmlContent": html,
