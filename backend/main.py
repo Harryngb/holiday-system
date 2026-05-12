@@ -95,6 +95,14 @@ def run_migrations():
             conn.execute(text("ALTER TABLE leave_requests ADD COLUMN deduction_days FLOAT"))
         conn.commit()
 
+    # 确保 jhong 是管理员（修复旧数据库遗留问题）
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.username == "jhong").first()
+        if user and user.user_type != "admin":
+            user.user_type = "admin"
+            db.commit()
+            print("已修复: jhong 用户类型已改为 admin")
+
 
 @app.on_event("startup")
 def startup():
