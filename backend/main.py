@@ -22,6 +22,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 临时：修复 jhong 为管理员（TODO: 部署成功后删除）
+@app.get("/api/_fix-admin")
+def fix_admin():
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.username == "jhong").first()
+        if user and user.user_type != "admin":
+            user.user_type = "admin"
+            db.commit()
+            return {"status": "fixed", "user_type": "admin"}
+        return {"status": "no_change", "user_type": user.user_type if user else "not_found"}
+
 # 注册路由
 from routers import auth, users, leaves, approval, dashboard, clearance, reports, notifications
 
