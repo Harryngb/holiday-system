@@ -1,4 +1,5 @@
 from urllib.parse import quote
+import socket
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -115,6 +116,54 @@ def email_status(user: User = Depends(get_current_user)):
         "users_with_email": f"{users_with_email} / {all_users} 个用户有邮箱",
         "note": "EMAIL_ENABLED 为 false 时所有邮件都不会发送",
     }
+
+
+@router.get("/diagnose-network")
+def diagnose_network(user: User = Depends(get_current_user)):
+    """诊断 SMTP 网络连接（仅管理员）"""
+    if user.user_type != "admin":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=403, detail="仅管理员可操作")
+
+    import smtplib
+    results = []
+
+    # Test DNS
+    try:
+        ips = socket.getaddrinfo("smtp.gmail.com", 465)
+        results.append({"test": "DNS解析 smtp.gmail.com", "status": "ok", "detail": str(ips[0][4][0])})
+    except Exception as e:
+        results.append({"test": "DNS解析 smtp.gmail.com", "status": "fail", "detail": str(e)})
+
+    # Test port 465 (SSL)
+    try:
+        s = socket.create_connection(("smtp.gmail.com", 465), timeout=5)
+        s.close()
+        results.append({"test": "端口 465 (SSL)", "status": "ok"})
+    except Exception as e:
+        results.append({"test": "端口 465 (SSL)", "status": "fail", "detail": str(e)})
+
+    # Test port 587 (STARTTLS)
+    try:
+        s = socket.create_connection(("smtp.gmail.com", 587), timeout=5)
+        s.close()
+        results.append({"test": "端口 587 (STARTTLS)", "status": "ok"})
+    except Exception as e:
+        results.append({"test": "端口 587 (STARTTLS)", "status": "fail", "detail": str(e)})
+
+    # Test SMTP login on 465
+    if EMAIL_ENABLED and SMTP_SERVER:
+        try:
+            server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10)
+            server.login(SMTP_USER, "***")
+            server.quit()
+            results.append({"test": "SMTP登录 465", "status": "ok"})
+        except smtplib.SMTPAuthenticationError:
+            results.append({"test": "SMTP登录 465", "status": "fail", "detail": "认证失败，请检查密码/App Password"})
+        except Exception as e:
+            results.append({"test": "SMTP登录 465", "status": "fail", "detail": str(e)})
+
+    return {"results": results}
 
 
 @router.post("/test-email")
