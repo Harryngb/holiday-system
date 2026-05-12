@@ -32,4 +32,4 @@ DEFAULT_ADMIN_NAME = "Admin"
 DEFAULT_ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@nvisionglobal.com")
 
 # 系统访问地址（邮件中的链接）
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+BASE_URL = os.getenv("BASE_URL", "https://applyleave.pages.dev")

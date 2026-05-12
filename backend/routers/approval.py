@@ -188,7 +188,8 @@ def batch_approve(
             notification_text += f"\n{warning}"
         create_notification(db, lr.user_id, "申请已通过（批量审批）", notification_text)
         if lr.user.email:
-            send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved")
+            leave_detail = f"{lr.start_date} ~ {lr.end_date or lr.start_date}，{lr.quantity}{lr.unit}"
+            send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved", leave_detail)
 
         if warning:
             warnings.append({"leave_id": lr.id, "user_name": lr.user.name if lr.user else "", "warning": warning})
@@ -268,7 +269,8 @@ def approve_leave(
 
     create_notification(db, lr.user_id, f"申请已通过{deduction_note}", notification_text)
     if lr.user.email:
-        send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved")
+        leave_detail = f"申请时间：{lr.start_date} ~ {lr.end_date or lr.start_date}，共 {lr.quantity}{lr.unit}"
+        send_leave_notification(lr.user.email, lr.user.name, leave_label, "approved", leave_detail)
 
     db.commit()
     db.refresh(lr)
@@ -322,7 +324,10 @@ def reject_leave(
         + (f"。原因: {req.comment}" if req.comment else ""),
     )
     if lr.user.email:
-        send_leave_notification(lr.user.email, lr.user.name, leave_label, "rejected")
+        leave_detail = f"申请时间：{lr.start_date} ~ {lr.end_date or lr.start_date}，共 {lr.quantity}{lr.unit}"
+        if req.comment:
+            leave_detail += f"<br>拒绝原因：{req.comment}"
+        send_leave_notification(lr.user.email, lr.user.name, leave_label, "rejected", leave_detail)
 
     db.commit()
     db.refresh(lr)

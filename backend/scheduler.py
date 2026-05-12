@@ -64,41 +64,43 @@ def send_daily_report():
         <p style="color:#999;font-size:12px;">报表文件已附在邮件中。</p>
         """
 
-        for addr in admin_emails:
-            msg = MIMEMultipart("mixed")
-            msg["From"] = SMTP_FROM
-            msg["To"] = addr
-            msg["Subject"] = f"[nVision] 假期日报 {today}"
+        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=15)
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        try:
+            for addr in admin_emails:
+                msg = MIMEMultipart("mixed")
+                msg["From"] = SMTP_FROM
+                msg["To"] = addr
+                msg["Subject"] = f"[nVision] 假期日报 {today}"
 
-            html_part = MIMEText(
-                f"""<html><body style="font-family:'Microsoft YaHei',Arial,sans-serif;padding:20px;color:#333;">
-                <div style="max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
-                    <div style="background-color:#1a3c6e;padding:15px;text-align:center;">
-                        <h2 style="color:white;margin:0;">nVision Global</h2>
-                        <p style="color:#ccc;margin:5px 0 0;">假期日报 {today}</p>
-                    </div>
-                    <div style="padding:20px;">{body_html}</div>
-                    <div style="background-color:#f5f5f5;padding:10px;text-align:center;font-size:12px;color:#999;">
-                        <p>nVision Global 假期管理系统 · 自动发送</p>
-                    </div>
-                </div></body></html>""",
-                "html", "utf-8",
-            )
-            msg.attach(html_part)
+                html_part = MIMEText(
+                    f"""<html><body style="font-family:'Microsoft YaHei',Arial,sans-serif;padding:20px;color:#333;">
+                    <div style="max-width:600px;margin:0 auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;">
+                        <div style="background-color:#1a3c6e;padding:15px;text-align:center;">
+                            <h2 style="color:white;margin:0;">nVision Global</h2>
+                            <p style="color:#ccc;margin:5px 0 0;">假期日报 {today}</p>
+                        </div>
+                        <div style="padding:20px;">{body_html}</div>
+                        <div style="background-color:#f5f5f5;padding:10px;text-align:center;font-size:12px;color:#999;">
+                            <p>nVision Global 假期管理系统 · 自动发送</p>
+                        </div>
+                    </div></body></html>""",
+                    "html", "utf-8",
+                )
+                msg.attach(html_part)
 
-            xlsx_part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            xlsx_part.set_payload(xlsx_data)
-            encoders.encode_base64(xlsx_part)
-            xlsx_part.add_header(
-                "Content-Disposition",
-                "attachment",
-                filename=f"nVision_Daily_Report_{today}.xlsx",
-            )
-            msg.attach(xlsx_part)
+                xlsx_part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                xlsx_part.set_payload(xlsx_data)
+                encoders.encode_base64(xlsx_part)
+                xlsx_part.add_header(
+                    "Content-Disposition",
+                    "attachment",
+                    filename=f"nVision_Daily_Report_{today}.xlsx",
+                )
+                msg.attach(xlsx_part)
 
-            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.send_message(msg)
+                server.send_message(msg)
+        finally:
             server.quit()
 
         print(f"[日报] {today} 报表已发送给 {len(admin_emails)} 个管理员")
