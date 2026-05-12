@@ -25,8 +25,11 @@ SMTP_FROM = os.getenv("SMTP_FROM", "")
 # SendGrid HTTP API (备用)
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 
-# Resend HTTP API (推荐，免费100封/天，Railway免费计划可用)
+# Resend HTTP API (备用)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+
+# Brevo (Sendinblue) HTTP API (推荐，免费300封/天，Railway免费计划可用)
+BREVO_API_KEY = os.getenv("BREVO_API_KEY", "")
 
 # 是否启用邮件通知
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "false").lower() == "true"

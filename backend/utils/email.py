@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import (
     SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM,
-    SENDGRID_API_KEY, RESEND_API_KEY, EMAIL_ENABLED, BASE_URL,
+    SENDGRID_API_KEY, RESEND_API_KEY, BREVO_API_KEY, EMAIL_ENABLED, BASE_URL,
 )
 
 
@@ -18,14 +18,16 @@ def send_email(to: str, subject: str, body: str):
 
     def _send():
         try:
-            if RESEND_API_KEY:
+            if BREVO_API_KEY:
+                _send_via_brevo(to, subject, body)
+            elif RESEND_API_KEY:
                 _send_via_resend(to, subject, body)
             elif SENDGRID_API_KEY:
                 _send_via_sendgrid(to, subject, body)
             elif all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
                 _send_via_smtp(to, subject, body)
             else:
-                print("[邮件] 跳过：未配置 RESEND_API_KEY / SENDGRID_API_KEY / SMTP")
+                print("[邮件] 跳过：未配置 BREVO_API_KEY / RESEND_API_KEY / SENDGRID_API_KEY / SMTP")
         except Exception as e:
             print(f"[邮件] 发送失败: {e}")
 
@@ -34,7 +36,7 @@ def send_email(to: str, subject: str, body: str):
 
 def _send_via_resend(to: str, subject: str, body: str):
     payload = json.dumps({
-        "from": SMTP_FROM or "nVision Global <onboarding@resend.dev>",
+        "from": "nVision Global <onboarding@resend.dev>",
         "to": [to],
         "subject": subject,
         "html": _html_wrapper(body),
@@ -51,6 +53,27 @@ def _send_via_resend(to: str, subject: str, body: str):
     )
     urllib.request.urlopen(req, timeout=15)
     print(f"[邮件] Resend 发送成功 -> {to}")
+
+
+def _send_via_brevo(to: str, subject: str, body: str):
+    payload = json.dumps({
+        "sender": {"name": "nVision Global", "email": "noreply@nvisionglobal.com"},
+        "to": [{"email": to}],
+        "subject": subject,
+        "htmlContent": _html_wrapper(body),
+    }).encode("utf-8")
+
+    req = urllib.request.Request(
+        "https://api.brevo.com/v3/smtp/email",
+        data=payload,
+        headers={
+            "api-key": BREVO_API_KEY,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    urllib.request.urlopen(req, timeout=15)
+    print(f"[邮件] Brevo 发送成功 -> {to}")
 
 
 def _send_via_smtp(to: str, subject: str, body: str):

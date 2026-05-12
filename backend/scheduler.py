@@ -9,7 +9,8 @@ from sqlalchemy.orm import sessionmaker
 
 from config import (
     DEFAULT_ADMIN_EMAIL, SMTP_SERVER, SMTP_PORT, SMTP_USER,
-    SMTP_PASSWORD, SMTP_FROM, SENDGRID_API_KEY, RESEND_API_KEY, EMAIL_ENABLED,
+    SMTP_PASSWORD, SMTP_FROM, SENDGRID_API_KEY, RESEND_API_KEY,
+    BREVO_API_KEY, EMAIL_ENABLED,
 )
 from database import DATABASE_URL, connect_args
 from models import User, LeaveRequest
@@ -23,7 +24,7 @@ def send_daily_report():
     """生成并发送每日假期报表给管理员"""
     if not EMAIL_ENABLED:
         return
-    if not RESEND_API_KEY and not SENDGRID_API_KEY and not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
+    if not RESEND_API_KEY and not SENDGRID_API_KEY and not BREVO_API_KEY and not all([SMTP_SERVER, SMTP_USER, SMTP_PASSWORD, SMTP_FROM]):
         return
 
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
@@ -63,7 +64,9 @@ def send_daily_report():
         """
         full_html = _html_wrapper(body_html)
 
-        if RESEND_API_KEY:
+        if BREVO_API_KEY:
+            _send_report_via_brevo(admin_emails, today, full_html, xlsx_data)
+        elif RESEND_API_KEY:
             _send_report_via_resend(admin_emails, today, full_html, xlsx_data)
         elif SENDGRID_API_KEY:
             _send_report_via_sendgrid(admin_emails, today, full_html, xlsx_data)
@@ -75,6 +78,32 @@ def send_daily_report():
         print(f"[日报] 发送失败: {e}")
     finally:
         db.close()
+
+
+def _send_report_via_brevo(admin_emails, today, html, xlsx_data):
+    encoded = base64.b64encode(xlsx_data).decode("utf-8")
+    for addr in admin_emails:
+        payload = json.dumps({
+            "sender": {"name": "nVision Global", "email": "noreply@nvisionglobal.com"},
+            "to": [{"email": addr}],
+            "subject": f"[nVision] 假期日报 {today}",
+            "htmlContent": html,
+            "attachment": [{
+                "name": f"nVision_Daily_Report_{today}.xlsx",
+                "content": encoded,
+            }],
+        }).encode("utf-8")
+
+        req = urllib.request.Request(
+            "https://api.brevo.com/v3/smtp/email",
+            data=payload,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        urllib.request.urlopen(req, timeout=30)
 
 
 def _send_report_via_resend(admin_emails, today, html, xlsx_data):
